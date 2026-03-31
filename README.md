@@ -1,7 +1,7 @@
 # Kimbu Auth Platform
 ## Production-Grade Multi-Tenant Authentication System
 
-A comprehensive, scalable authentication platform comparable to Auth0, Firebase Authentication, and AWS Cognito. Built with NestJS, PostgreSQL, Redis, and designed for enterprise-scale deployments.
+A comprehensive, scalable authentication platform comparable to Auth0, Firebase Auth, and AWS Cognito. Built with NestJS, PostgreSQL, Redis, and designed for enterprise-scale deployments.
 
 [![TypeScript](https://img.shields.io/badge/typescript-%23007ACC.svg?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![NestJS](https://img.shields.io/badge/NestJS-%23EA2845.svg?style=flat&logo=nestjs&logoColor=white)](https://nestjs.com/)
