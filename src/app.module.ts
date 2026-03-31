@@ -3,11 +3,14 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import * as ioredis from 'ioredis';
 
 import { TokenService } from './common/token.service';
 import { SecurityService } from './common/security.service';
 import { AuthModule } from './modules/auth/auth.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 import {
   User,
@@ -42,6 +45,12 @@ import {
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
+
+    // Global rate limiting (100 req/min per IP, burst of 20/sec)
+    ThrottlerModule.forRoot([
+      { name: 'short', ttl: 1000, limit: 20 },
+      { name: 'medium', ttl: 60000, limit: 100 },
+    ]),
 
     // Database
     TypeOrmModule.forRootAsync({
@@ -124,8 +133,13 @@ import {
 
     // Auth module
     AuthModule,
+    AdminModule,
   ],
-  providers: [TokenService, SecurityService],
+  providers: [
+    TokenService,
+    SecurityService,
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
   exports: [TokenService, SecurityService, TypeOrmModule, ConfigModule, CacheModule, AuthModule],
 })
 export class AppModule {}

@@ -62,17 +62,19 @@ export class TokenService {
     roles: string[],
     deviceId: string
   ): string {
-    const payload: JwtPayload = {
+    const now = Math.floor(Date.now() / 1000);
+    const payload: Omit<JwtPayload, 'exp'> & { iat: number; jti: string } = {
       sub: userId,
       app_id: appId,
       roles,
       device_id: deviceId,
       jti: uuidv4(),
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + this.ACCESS_TOKEN_EXPIRY_SECONDS,
+      iat: now,
     };
 
-    return this.jwtService.sign(payload);
+    return this.jwtService.sign(payload, {
+      expiresIn: this.ACCESS_TOKEN_EXPIRY_SECONDS,
+    });
   }
 
   /**

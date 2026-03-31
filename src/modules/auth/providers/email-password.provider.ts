@@ -269,24 +269,24 @@ export class EmailPasswordProvider implements IAuthProvider {
    * Check if email is rate-limited globally
    */
   private async checkRateLimit(email: string, ipAddress: string): Promise<void> {
-    const cacheKey = `ratelimit:login:${email}`;
-    const count = await this.cacheManager.get<number>(cacheKey);
-
-    if (count && count >= 5) {
-      // 5 attempts per 15 minutes per email
-      throw new RateLimitError(
-        'Too many login attempts for this email, please try again in 15 minutes'
-      );
-    }
-
-    const ipCacheKey = `ratelimit:login:ip:${ipAddress}`;
-    const ipCount = await this.cacheManager.get<number>(ipCacheKey);
-
-    if (ipCount && ipCount >= 10) {
-      // 10 attempts per 15 minutes per IP
-      throw new RateLimitError(
-        'Too many login attempts from this IP, please try again later'
-      );
+    try {
+      const cacheKey = `ratelimit:login:${email}`;
+      const count = await this.cacheManager.get<number>(cacheKey);
+      if (count && count >= 5) {
+        throw new RateLimitError(
+          'Too many login attempts for this email, please try again in 15 minutes'
+        );
+      }
+      const ipCacheKey = `ratelimit:login:ip:${ipAddress}`;
+      const ipCount = await this.cacheManager.get<number>(ipCacheKey);
+      if (ipCount && ipCount >= 10) {
+        throw new RateLimitError(
+          'Too many login attempts from this IP, please try again later'
+        );
+      }
+    } catch (err) {
+      if (err instanceof RateLimitError) throw err;
+      // Redis unavailable — fail open, DB-level brute force still applies
     }
   }
 
@@ -339,10 +339,14 @@ export class EmailPasswordProvider implements IAuthProvider {
       await this.failedAttemptsRepository.save(failedAttempt);
     }
 
-    // Update cache
-    const cacheKey = `ratelimit:login:${email}`;
-    const current = (await this.cacheManager.get<number>(cacheKey)) || 0;
-    await this.cacheManager.set(cacheKey, current + 1, 15 * 60 * 1000); // 15 min
+    // Update cache (best-effort)
+    try {
+      const cacheKey = `ratelimit:login:${email}`;
+      const current = (await this.cacheManager.get<number>(cacheKey)) || 0;
+      await this.cacheManager.set(cacheKey, current + 1, 15 * 60 * 1000);
+    } catch {
+      // Redis unavailable — skip cache update
+    }
   }
 
   /**

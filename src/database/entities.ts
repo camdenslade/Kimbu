@@ -482,7 +482,7 @@ export class FailedAttempt {
   @CreateDateColumn()
   first_attempt_at!: Date;
 
-  @Column('timestamp')
+  @Column('timestamp', { nullable: true })
   locked_until?: Date; // When brute-force lockout expires
 
   @Column('varchar', { default: 'login_attempt' })
