@@ -325,7 +325,7 @@ Documented in architecture:
 
 ---
 
-## 📁 Project Structure Created
+## Project Structure Created
 
 ```
 Kimbu/
@@ -363,7 +363,7 @@ Kimbu/
 
 ---
 
-## 📊 Code Metrics
+## Code Metrics
 
 ```
 Total Lines of Code (Core):
@@ -392,7 +392,7 @@ Combined: ~7,600 lines
 
 ---
 
-## 🔐 Security Coverage
+## Security Coverage
 
 ✅ **Password Security**
 - Argon2id hashing
@@ -427,7 +427,7 @@ Combined: ~7,600 lines
 
 ---
 
-## 🚀 Production-Ready Features
+## Production-Ready Features
 
 ✅ **Availability**
 - Stateless design (horizontal scale)
@@ -461,7 +461,7 @@ Combined: ~7,600 lines
 
 ---
 
-## 🎯 Key Decisions
+## Key Decisions
 
 ### Why Argon2id?
 - Memory-hard algorithm
@@ -524,7 +524,7 @@ Combined: ~7,600 lines
 
 ---
 
-## 📋 What's NOT Included (By Design)
+## What's NOT Included (By Design)
 
 These are enterprise features you'd add later:
 
@@ -543,7 +543,7 @@ Core architecture and security are complete.
 
 ---
 
-## 🎓 Learning Outcomes
+## Learning Outcomes
 
 Studying this project teaches:
 1. Authentication system design
@@ -583,7 +583,7 @@ Studying this project teaches:
 
 ---
 
-## 📖 Documentation Index
+## Documentation Index
 
 1. **[01_ARCHITECTURE.md](docs/01_ARCHITECTURE.md)**
    - System design

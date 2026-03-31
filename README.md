@@ -8,16 +8,16 @@ A comprehensive, scalable authentication platform comparable to Auth0, Firebase 
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![Redis](https://img.shields.io/badge/Redis-%23DC382D.svg?style=flat&logo=redis&logoColor=white)](https://redis.io/)
 
-## 🎯 Features
+## Features
 
 ### Authentication Methods
-- ✅ **Email/Password** - Traditional auth with Argon2 hashing
-- ✅ **SMS OTP** - Twilio integration for 2FA
-- ✅ **OAuth 2.0** - Google, Apple, GitHub providers
-- ✅ **Apple Sign-In** - Native iOS + web support
-- ✅ **Multi-Identity Linking** - One user, multiple login methods
-- ⏳ **Passwordless** - Magic links (future)
-- ⏳ **WebAuthn/FIDO2** - Hardware security keys (future)
+- **Email/Password** - Traditional auth with Argon2 hashing
+- **SMS OTP** - Twilio integration for 2FA
+- **OAuth 2.0** - Google, Apple, GitHub providers
+- **Apple Sign-In** - Native iOS + web support
+- **Multi-Identity Linking** - One user, multiple login methods
+- **Passwordless** - Magic links (future)
+- **WebAuthn/FIDO2** - Hardware security keys (future)
 
 ### Core Capabilities
 - **Multi-Tenant Architecture** - Isolated users, apps, roles
@@ -30,16 +30,16 @@ A comprehensive, scalable authentication platform comparable to Auth0, Firebase 
 - **Device Fingerprinting** - Session security
 
 ### Production-Ready
-- 🔒 **Security-First** - Argon2, HTTPS, secure tokens
-- 📊 **Observable** - Comprehensive audit logs, metrics
-- 🚀 **Scalable** - Horizontal scaling with stateless design
-- 💾 **Reliable** - Database backup strategy, recovery
-- 🧪 **Tested** - Unit + integration test suite
-- 📚 **Documented** - Full API docs, architecture guide
+- **Security-First** - Argon2, HTTPS, secure tokens
+- **Observable** - Comprehensive audit logs, metrics
+- **Scalable** - Horizontal scaling with stateless design
+- **Reliable** - Database backup strategy, recovery
+- **Tested** - Unit + integration test suite
+- **Documented** - Full API docs, architecture guide
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -76,7 +76,7 @@ User Request → Rate Limiter → Provider → Token Service → Session → Res
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 ```bash
@@ -135,7 +135,7 @@ curl -X POST http://localhost:3001/v1/auth/login \
 
 ---
 
-## 📖 Documentation
+## Documentation
 
 - **[Architecture](./docs/01_ARCHITECTURE.md)** - System design, components, flows
 - **[Build Plan](./docs/02_BUILD_PLAN.md)** - Week-by-week roadmap, timeline
@@ -144,7 +144,7 @@ curl -X POST http://localhost:3001/v1/auth/login \
 
 ---
 
-## 🔐 Security Features
+## Security Features
 
 ### Password Security
 - **Argon2id** hashing (not bcrypt)
@@ -174,7 +174,7 @@ curl -X POST http://localhost:3001/v1/auth/login \
 
 ---
 
-## 📊 Example: Full Auth Flow
+## Example: Full Auth Flow
 
 ### Email/Password Registration
 ```
@@ -231,7 +231,7 @@ curl -X POST http://localhost:3001/v1/auth/login \
 
 ---
 
-## 🏗️ Project Structure
+## Project Structure
 
 ```
 src/
@@ -266,7 +266,7 @@ src/
 
 ---
 
-## 🧪 Testing
+## Testing
 
 ```bash
 # Run all tests
@@ -287,7 +287,7 @@ pnpm test:integration
 
 ---
 
-## 📈 Performance
+## Performance
 
 - **Authentication latency**: P99 < 500ms
 - **Token generation**: P99 < 100ms
@@ -297,7 +297,7 @@ pnpm test:integration
 
 ---
 
-## 🚢 Deployment
+## Deployment
 
 ### Docker
 ```bash
@@ -334,9 +334,9 @@ heroku logs --tail
 
 ---
 
-## 📋 Roadmap
+## Roadmap
 
-### Phase 1 (Weeks 1-2) ✅
+### Phase 1 (Weeks 1-2)
 - [x] Core auth infrastructure
 - [x] Email/password provider
 - [x] Database schema
@@ -369,7 +369,7 @@ heroku logs --tail
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Contributions welcome! Please:
 1. Create feature branch: `git checkout -b feature/auth-x`
@@ -379,13 +379,13 @@ Contributions welcome! Please:
 
 ---
 
-## 📝 License
+## License
 
 ISC License - See LICENSE file for details
 
 ---
 
-## 📞 Support
+## Support
 
 - **Documentation**: See `/docs` folder
 - **Issues**: GitHub discussions
@@ -393,7 +393,7 @@ ISC License - See LICENSE file for details
 
 ---
 
-## 🎓 Key Concepts
+## Key Concepts
 
 - **JWT**: Stateless token containing user claims
 - **Refresh Token Rotation**: Issue new refresh token on every use
@@ -405,13 +405,9 @@ ISC License - See LICENSE file for details
 
 ---
 
-## 📚 Resources
+## Resources
 
 - [OWASP Authentication Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
 - [OAuth 2.0 Specification](https://datatracker.ietf.org/doc/html/rfc6749)
 - [NestJS Documentation](https://docs.nestjs.com/)
 - [Argon2 Hashing](https://github.com/ranisalt/node-argon2)
-
----
-
-**Built with ❤️ for production authentication needs.**
