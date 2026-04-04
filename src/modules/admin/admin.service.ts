@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, MoreThan } from 'typeorm';
-import { User, App, Session, AuditLog } from '../../database/entities';
+import { User, App, Session, AuditLog, UserApp, Identity, Role } from '../../database/entities';
+import { randomBytes } from 'crypto';
 
 @Injectable()
 export class AdminService {
@@ -17,6 +18,15 @@ export class AdminService {
 
     @InjectRepository(AuditLog)
     private auditLogsRepo: Repository<AuditLog>,
+
+    @InjectRepository(UserApp)
+    private userAppsRepo: Repository<UserApp>,
+
+    @InjectRepository(Identity)
+    private identitiesRepo: Repository<Identity>,
+
+    @InjectRepository(Role)
+    private rolesRepo: Repository<Role>,
   ) {}
 
   listUsers() {
@@ -95,6 +105,168 @@ export class AdminService {
       take: limit,
       skip: offset,
     });
+  }
+
+  // ============================================
+  // POOL (APP) DETAIL ENDPOINTS
+  // ============================================
+
+  async getPool(id: string) {
+    const app = await this.appsRepo.findOne({ where: { id } });
+    if (!app) throw new NotFoundException('Pool not found');
+
+    const [userCount, sessionCount] = await Promise.all([
+      this.userAppsRepo.count({ where: { app_id: id } }),
+      this.sessionsRepo.count({ where: { app_id: id, is_active: true } }),
+    ]);
+
+    return { ...app, userCount, sessionCount };
+  }
+
+  async getPoolUsers(poolId: string) {
+    const memberships = await this.userAppsRepo.find({
+      where: { app_id: poolId },
+      relations: ['user', 'roles'],
+      order: { created_at: 'DESC' },
+    });
+
+    return memberships.map((m) => ({
+      membershipId: m.id,
+      joinedAt: m.created_at,
+      roles: m.roles.map((r) => r.name),
+      ...m.user,
+    }));
+  }
+
+  async createPoolUser(
+    poolId: string,
+    data: { email: string; password: string; name?: string },
+    ownerId: string,
+  ) {
+    const pool = await this.appsRepo.findOne({ where: { id: poolId } });
+    if (!pool) throw new NotFoundException('Pool not found');
+
+    // Check email not already in this pool
+    const existingIdentity = await this.identitiesRepo.findOne({
+      where: { email: data.email.toLowerCase().trim(), identity_type: 'email' },
+      relations: ['user'],
+    });
+
+    let user: User;
+    if (existingIdentity) {
+      // User exists globally — just add membership if not already in pool
+      user = existingIdentity.user;
+      const existing = await this.userAppsRepo.findOne({
+        where: { user_id: user.id, app_id: poolId },
+      });
+      if (existing) throw new Error('User already in this pool');
+    } else {
+      // Create new user
+      user = this.usersRepo.create({
+        email: data.email.toLowerCase().trim(),
+        name: data.name,
+        email_verified: false,
+        status: 'active',
+        metadata: {},
+      });
+      user = await this.usersRepo.save(user);
+
+      // Hash password
+      const { hash } = await import('@node-rs/argon2');
+      const passwordHash = await hash(data.password);
+
+      const identity = this.identitiesRepo.create({
+        user_id: user.id,
+        identity_type: 'email',
+        email: data.email.toLowerCase().trim(),
+        password_hash: passwordHash,
+        is_primary: true,
+        is_verified: false,
+      });
+      await this.identitiesRepo.save(identity);
+    }
+
+    // Add pool membership
+    const membership = this.userAppsRepo.create({
+      user_id: user.id,
+      app_id: poolId,
+    });
+    await this.userAppsRepo.save(membership);
+
+    return user;
+  }
+
+  async updatePoolConfig(
+    id: string,
+    config: {
+      mfa_required?: boolean;
+      session_duration_hours?: number;
+      oauth_redirect_uris?: string[];
+      password_min_length?: number;
+      password_require_uppercase?: boolean;
+      password_require_numbers?: boolean;
+      password_require_symbols?: boolean;
+    },
+  ) {
+    const app = await this.appsRepo.findOne({ where: { id } });
+    if (!app) throw new NotFoundException('Pool not found');
+    app.config = { ...app.config, ...config };
+    return this.appsRepo.save(app);
+  }
+
+  async regeneratePoolApiKey(id: string) {
+    const app = await this.appsRepo.findOne({ where: { id } });
+    if (!app) throw new NotFoundException('Pool not found');
+    app.api_key = `pk_${randomBytes(24).toString('hex')}`;
+    app.api_secret = `sk_${randomBytes(32).toString('hex')}`;
+    return this.appsRepo.save(app);
+  }
+
+  async getPoolRoles(poolId: string) {
+    return this.rolesRepo.find({
+      where: { app_id: poolId },
+      order: { name: 'ASC' },
+    });
+  }
+
+  async createPoolRole(poolId: string, data: { name: string; description?: string }) {
+    const pool = await this.appsRepo.findOne({ where: { id: poolId } });
+    if (!pool) throw new NotFoundException('Pool not found');
+    const role = this.rolesRepo.create({
+      app_id: poolId,
+      name: data.name.toLowerCase().trim(),
+      description: data.description,
+    });
+    return this.rolesRepo.save(role);
+  }
+
+  async assignUserRole(poolId: string, userId: string, roleName: string) {
+    const membership = await this.userAppsRepo.findOne({
+      where: { user_id: userId, app_id: poolId },
+      relations: ['roles'],
+    });
+    if (!membership) throw new NotFoundException('User not in this pool');
+
+    const role = await this.rolesRepo.findOne({ where: { app_id: poolId, name: roleName } });
+    if (!role) throw new NotFoundException('Role not found');
+
+    if (!membership.roles.find((r) => r.id === role.id)) {
+      membership.roles = [...membership.roles, role];
+      await this.userAppsRepo.save(membership);
+    }
+    return membership;
+  }
+
+  async removeUserRole(poolId: string, userId: string, roleName: string) {
+    const membership = await this.userAppsRepo.findOne({
+      where: { user_id: userId, app_id: poolId },
+      relations: ['roles'],
+    });
+    if (!membership) throw new NotFoundException('User not in this pool');
+
+    membership.roles = membership.roles.filter((r) => r.name !== roleName);
+    await this.userAppsRepo.save(membership);
+    return membership;
   }
 
   async getOverviewStats() {

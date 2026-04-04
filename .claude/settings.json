@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(aws elbv2:*)",
+      "Bash(dig kimbu.cslade.space +short)",
+      "Bash(dig api.kimbu.cslade.space +short)",
+      "Bash(curl -s https://api.kimbu.cslade.space/health)",
+      "Bash(aws rds:*)"
+    ]
+  }
+}
